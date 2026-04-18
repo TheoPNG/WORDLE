@@ -30,81 +30,123 @@
      }
  }
  async function processCSV() {
-     const doc = await fetchCSV('nothingToSeeHere.csv');
+     const doc = await fetchCSV('https://theopng.github.io/4E-Wordle/nothingToSeeHere.csv');
      if (!doc) {
          console.error("CSV data could not be retrieved.");
          return;
      }
-
-
-
-     const word = findFirstMatchingItem(doc);
-     return word ? word.split('') : [];
-
-
+ 
+ 
  }
  
+ async function processCSV() {
+     const doc = await fetchCSV('https://theopng.github.io/4E-Wordle/nothingToSeeHere.csv');
+     if (!doc) {
+         console.error("CSV data could not be retrieved.");
+         return;
+     }
+ 
+ 
+ 
+     const word = findFirstMatchingItem(doc);
+     return word ? word.split('') : [];
+ 
+ 
+ }
+ 
+ // Call the function properly
+ processCSV();
+ // Function to parse CSV and find the first matching item
+ function findFirstMatchingItem(csvText) {
+     const todayDate = getFormattedDate(); // Example: "Fri Jan 31 2025"
+     const lines = csvText.trim().split("\n");
+ 
+     for (let line of lines) {
+ 
+         let [word, date] = line.split(",");
+         if (date && date.trim() === todayDate) {
+             return word.trim() || "(No word assigned)";
+ 
+         }
+     }
+     return "No match found for today's date";
+ }
+ // const word = findFirstMatchingItem(doc.toString());
  async function initGame() {
      letter = await processCSV(); // Wait for processCSV() to finish
  }
-
+ 
  initGame(); // Run it asynchronously
  selectedRow = 1;
  const runLetter = async (letter) => {
      if (letter == "Enter") {
          const fullElements = document.getElementsByClassName("full");
-
-         // Ensure the word is exactly 5 letters long
-         if (fullElements.length !== 5) {
+ 
+         // Ensure the word is exactly 4 letters long
+         if (fullElements.length !== 4) {
              alert("Please fill in all the letters");
              // Stop execution
+         } else if (document.getElementById("HELLO") == null) {
+             alert("Please fill in all the letters");
+         }
+ 
+ 
+         // Convert HTMLCollection to a string
+         const word = Array.from(fullElements).map(el => el.innerHTML).join("") + document.getElementById("HELLO").innerHTML;
+ 
+         // Check if it's a real word
+         const isValid = await isRealWord(word);
+ 
+ 
+ 
+         if (isValid && fullElements.length == 4) {
+             checkSubmission(); // Proceed if it's a valid word
          } else {
-             // Convert HTMLCollection to a string
-             const word = Array.from(document.getElementById(`row${selectedRow}`).children).map(el => el.innerHTML).join("");
-
-             // Check if it's a real word
-             const isValid = await isRealWord(word);
-
-             if (isValid) {
-                 checkSubmission(); // Proceed if it's a valid word
-             } else {
-                 alert("Not a valid word, try again!");
-             }
+             alert("Not a valid word, try again!");
          }
      } else if (/^[a-zA-Z]$/.test(letter)) {
-         document.getElementById(`${selectedRow}current-key`).innerHTML = letter.toUpperCase();
-         document.getElementById(`${selectedRow}current-key`).id = "HELLO";
-         og = document.getElementById("HELLO");
-         document.getElementById("HELLO").className = "full";
-         document.getElementById("HELLO").removeAttribute("id");
-
-         if (og.nextElementSibling && og.nextElementSibling.id !== `last${selectedRow}`) {
-             og.nextElementSibling.id = `${selectedRow}current-key`;
+         document.getElementById(`${selectedRow}current-key`).innerHTML = letter;
+ 
+         if (document.getElementById(`${selectedRow}current-key`) != null) {
+             og = document.getElementById(`${selectedRow}current-key`);
+             //("Set innerhtml");
+             document.getElementById(`${selectedRow}current-key`).innerHTML = letter.toUpperCase();
+             //("Set innerhtml");
+             document.getElementById(`${selectedRow}current-key`).id = "HELLO";
+             //("Changed id");
+ 
+             if (og.nextElementSibling.id != "last") {
+                 og.nextElementSibling.id = `${selectedRow}current-key`;
+                 //("Set next child");
+             } else {
+                 og.nextElementSibling.id = `${selectedRow}current-key`;
+             }
+             document.getElementById("HELLO").className = "full";
+             document.getElementById("HELLO").removeAttribute("id");
+             //("Removed id");
+             //(`Key pressed: ${event.key}`);
+ 
          }
-
      } else if (letter == "Backspace") {
-         let current;
-         if (document.getElementById("HELLO")) {
-             current = document.getElementById("HELLO");
-         } else {
-             // Find the last filled cell in the row
-             const row = document.getElementById(`row${selectedRow}`);
-             const cells = row.children;
-             for (let i = cells.length - 1; i >= 0; i--) {
-                 if (cells[i].innerHTML !== "") {
-                     current = cells[i];
-                     break;
-                 }
-             }
+ 
+ 
+ 
+         if(document.getElementById(`HELLO`) != null){
+         currentActive= document.getElementById(`HELLO`);
+         currentActive.innerHTML = "";
+         currentActive.id = `${selectedRow}current-key`;
+         // currentActive.removeAttribute("id");
          }
-         if (current) {
-             current.innerHTML = "";
-             current.id = `${selectedRow}current-key`;
-             if (current.className === "full") {
-                 current.className = "letter";
-             }
+         else{
+         currentActive = document.getElementById(`${selectedRow}current-key`);
+ 
+         currentActive.previousElementSibling.innerHTML = "";
+         currentActive.previousElementSibling.id = `${selectedRow}current-key`;
+         currentActive.removeAttribute("id");
          }
-     }
+ 
+ 
+     };
  }
  
  
@@ -116,6 +158,7 @@
  );
  
  const checkSubmission = async () => {
+     document.getElementById('HELLO').className = "full";
      var els = document.getElementsByClassName('full'),
          i = els.length;
      while (i--) {
@@ -162,6 +205,7 @@
          await sleep(100); // Wait for the flip to progress before moving to the next tile
      }
  
+     document.getElementById("HELLO").id = "";
      selectedRow++;
  
      if (count == 5) {
