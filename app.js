@@ -72,48 +72,39 @@
              }
          }
      } else if (/^[a-zA-Z]$/.test(letter)) {
-         document.getElementById(`${selectedRow}current-key`).innerHTML = letter;
- 
-         if (document.getElementById(`${selectedRow}current-key`) != null) {
-             og = document.getElementById(`${selectedRow}current-key`);
-             //("Set innerhtml");
-             document.getElementById(`${selectedRow}current-key`).innerHTML = letter.toUpperCase();
-             //("Set innerhtml");
-             document.getElementById(`${selectedRow}current-key`).id = "HELLO";
-             //("Changed id");
- 
-             if (og.nextElementSibling.id != "last") {
-                 og.nextElementSibling.id = `${selectedRow}current-key`;
-                 //("Set next child");
-             } else {
-                 og.nextElementSibling.id = `${selectedRow}current-key`;
-             }
-             document.getElementById("HELLO").className = "full";
-             document.getElementById("HELLO").removeAttribute("id");
-             //("Removed id");
-             //(`Key pressed: ${event.key}`);
- 
+         document.getElementById(`${selectedRow}current-key`).innerHTML = letter.toUpperCase();
+         document.getElementById(`${selectedRow}current-key`).id = "HELLO";
+         og = document.getElementById("HELLO");
+         document.getElementById("HELLO").className = "full";
+         document.getElementById("HELLO").removeAttribute("id");
+
+         if (og.nextElementSibling && og.nextElementSibling.id !== `last${selectedRow}`) {
+             og.nextElementSibling.id = `${selectedRow}current-key`;
          }
+
      } else if (letter == "Backspace") {
- 
- 
- 
-         if(document.getElementById(`HELLO`) != null){
-         currentActive= document.getElementById(`HELLO`);
-         currentActive.innerHTML = "";
-         currentActive.id = `${selectedRow}current-key`;
-         // currentActive.removeAttribute("id");
+         let current;
+         if (document.getElementById("HELLO")) {
+             current = document.getElementById("HELLO");
+         } else {
+             // Find the last filled cell in the row
+             const row = document.getElementById(`row${selectedRow}`);
+             const cells = row.children;
+             for (let i = cells.length - 1; i >= 0; i--) {
+                 if (cells[i].innerHTML !== "") {
+                     current = cells[i];
+                     break;
+                 }
+             }
          }
-         else{
-         currentActive = document.getElementById(`${selectedRow}current-key`);
- 
-         currentActive.previousElementSibling.innerHTML = "";
-         currentActive.previousElementSibling.id = `${selectedRow}current-key`;
-         currentActive.removeAttribute("id");
+         if (current) {
+             current.innerHTML = "";
+             current.id = `${selectedRow}current-key`;
+             if (current.className === "full") {
+                 current.className = "letter";
+             }
          }
- 
- 
-     };
+     }
  }
  
  
@@ -125,7 +116,6 @@
  );
  
  const checkSubmission = async () => {
-     document.getElementById('HELLO').className = "full";
      var els = document.getElementsByClassName('full'),
          i = els.length;
      while (i--) {
@@ -172,7 +162,6 @@
          await sleep(100); // Wait for the flip to progress before moving to the next tile
      }
  
-     document.getElementById("HELLO").id = "";
      selectedRow++;
  
      if (count == 5) {
